@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<script type="text/javascript" src="./vue.js"></script>
+	<style type="text/css">
+		* {
+			margin: 0;
+			padding: 0;
+			list-style: none;
+			user-select: none;
+		}
+		.wrapper {
+			width: 600px;
+			height: 400px;
+			margin: 10px auto;
+		}
+		.stage {
+			height: 300px;
+		}
+		.you,
+		.monster {
+			display: inline-block;
+			width: 300px;
+			height: 300px;
+			text-align: center;
+			box-sizing: border-box;
+			padding-top: 60px;
+		}
+		.life {
+			width: 264px;
+			height: 44px;
+			margin: 50px auto;
+			box-sizing: border-box;
+			border: 2px solid #666;
+			border-radius: 10px;
+		}
+		.life-inner {
+			height: 40px;
+			border-radius: 10px;
+			background-color: green;
+			line-height: 36px;
+			color: #fcfcfc;
+			transition: width 0.4s ease;
+		}
+		span {
+
+		}
+		.pannel {
+			height: 100px;
+		}
+		.pannel ul {
+			display: flex;
+		}
+		.pannel ul li {
+			flex: 1;
+			border: 1px solid #666;
+			padding: 10px 20px;
+			margin: 0 20px;
+			text-align: center;
+			height: 40px;
+			line-height: 40px;
+			border-radius: 8px;
+		}
+		.spec {
+			line-height: 20px !important;
+		}
+		.haveSpec {
+			color: #ccc;
+			border-color: #ccc !important;
+		}
+
+		.info li {
+			height: 30px;
+			background-color: #aaa;
+			margin-top: 2px;
+			text-align: center;
+			line-height: 30px;
+			border-radius: 4px;
+			color: #fcfcfc;
+		}
+		.info li.specLi {
+			background-color: #ccc;
+		}
+		
+	</style>
+</head>
+<body>
+	<div class="wrapper">
+		<div class="stage">
+			<div class="you">
+				<div class="title">
+					<h1>YOU</h1>
+				</div>
+				<div class="life">
+					<div class="life-inner" :style = "{width: youLife + '%' }">{{ parseInt(youLife) }}</div>
+				</div>
+			</div><div class="monster">
+				<div class="title">
+					<h1>MONSTER</h1>
+				</div>
+				<div class="life">
+					<div class="life-inner" :style = "{width: monsterLife + '%' }">{{ parseInt(monsterLife) }}</div>
+				</div>
+			</div>
+		</div>
+		<div class="pannel">
+			<ul>
+				<template v-if = "play">					
+					<li class="pannel-list" @click = "attack">ATTACK</li>
+					<li class="pannel-list spec" :class="{haveSpec: spec}" @click = "specAttack">SPECIAL ATTACK</li>
+					<li class="pannel-list" @click = "play = false; playFn()">GIVE UP</li>
+				</template>
+				<template v-else>
+					<li class="pannel-list" @click = "playFn">PLAY</li>
+				</template>
+			</ul>
+		</div>
+		<div class="info">
+			<ul>
+				<li v-for = "item in infoList" :class = "{specLi : item.kind == 'You' ? true : false}">{{item.info}}</li>
+			</ul>
+		</div>
+	</div>
+
+	<script type="text/javascript">
+		new Vue({
+			el : ".wrapper",
+			data : {
+				play : false,
+				spec : false,
+				youLife : 100,
+				monsterLife : 100,
+				infoList : []
+			},
+			methods : {
+				attack : function () {
+					var life = this.monsterLife;
+					var harm = Math.ceil( Math.random() * 20 )
+					if (life - harm <= 0) {
+						this.monsterLife = 0;
+						this.infoList.unshift({
+							info : `You attack ${harm}, Monster yeilded, you win !`,
+							kind : "You"
+						});
+						this.play = false;
+					} else {
+						this.monsterLife = life - harm;
+						this.infoList.unshift({
+							info : `You attack ${harm}`,
+							kind : "You"
+						});
+						this.monsterAttack();
+					}
+				},
+				specAttack : function () {
+					if (!this.spec) {
+						var life =this.monsterLife;
+						var harm = Math.ceil( Math.random() * 20 + 20)
+						this.monsterLife = life - harm;
+						this.monsterAttack();
+						this.spec = true;
+					}
+				},
+				monsterAttack : function () {
+					var life = this.youLife;
+					var harm = Math.ceil( Math.random() * 20 )
+					if (life - harm <= 0) {
+						this.youLife = 0;
+						this.play = false;
+						this.infoList.unshift({
+							info : `Monster attack ${harm}, Monster win, you lost !`,
+							kind : "Monster"
+						});
+					} else {
+						this.youLife = life - harm;
+						this.infoList.unshift({
+							info : `Monster attack ${harm}`,
+							kind : "Monster"
+						});
+					}
+				},
+				playFn : function () {
+					this.play = true;
+					this.youLife = 100;
+					this.monsterLife = 100; 
+					this.spec = false;
+					this.infoList = [];
+				}
+			}
+		})	
+	</script>
+</body>
+</html>
